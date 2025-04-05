@@ -1,12 +1,57 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="KeyToss.Views.SignUpPage"
-             Title="SignUpPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:Class="KeyToss.SignUpPage"
+             BackgroundColor="White">
+    <ContentPage.Content>
+        <StackLayout Padding="30,20" Spacing="0">
+            <Label Text="Sign up"
+                   FontSize="18"
+                   Margin="0,0,0,25"/>
+
+            <Label Text="Username"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,5" />
+            <Entry x:Name="UsernameEntry" 
+                   Placeholder="Value"
+                   Margin="0,0,0,15" />
+
+            <Label Text="Email"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,5" />
+            <Entry x:Name="EmailEntry" 
+                   Placeholder="Value"
+                   Keyboard="Email"
+                   Margin="0,0,0,15" />
+
+            <Label Text="Password"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,5" />
+            <Entry x:Name="PasswordEntry" 
+                   Placeholder="Value"
+                   IsPassword="True"
+                   Margin="0,0,0,15" />
+
+            <Label Text="Confirm Password"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,5" />
+            <Entry x:Name="ConfirmPasswordEntry" 
+                   Placeholder="Value"
+                   IsPassword="True"
+                   Margin="0,0,0,25" />
+
+            <Button Text="Sign Up"
+                    BackgroundColor="#1A1A1A"
+                    TextColor="White"
+                    CornerRadius="4"
+                    HeightRequest="40"
+                    Margin="0,10,0,0"
+                    x:Name="SignUpButton"
+                    Clicked="OnSignUpButtonClicked" />
+        </StackLayout>
+    </ContentPage.Content>
 </ContentPage>
