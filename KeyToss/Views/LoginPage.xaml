@@ -2,11 +2,19 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KeyToss.Views.LoginPage"
-             Title="LoginPage">
+             Title="">
     <ScrollView>
         <VerticalStackLayout
             Padding="30,0"
             Spacing="25">
+
+            <Label  
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                FontSize="56"
+                FontAttributes="Bold"
+                Text="Key Toss"
+                />
 
             <Label
                 Text="Username"
@@ -34,11 +42,14 @@
                     />
                 <Label
                     Text="Sign Up Here"
+                    HorizontalOptions="Center"
+                    Padding="10"
+                    TextColor="CadetBlue"
+                    TextDecorations="Underline"
                     >
-                    <Label.GestureRecognizers
-                        x:Name="SignUpLabel"
-                        Tapped=""
-                        />
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                    </Label.GestureRecognizers>
                 </Label>
             </VerticalStackLayout>
 
