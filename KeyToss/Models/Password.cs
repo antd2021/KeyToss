@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KeyToss.Models
 {
-    class Password
+    public class Password
     {
         public int PasswordId { get; set; }
         public string WebsiteName { get; set; }
