@@ -1,4 +1,4 @@
-﻿namespace KeyToss;
+namespace KeyToss;
 
 public partial class App : Application
 {
