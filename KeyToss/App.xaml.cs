@@ -1,11 +1,12 @@
-﻿namespace KeyToss;
-
-public partial class App : Application
+﻿namespace KeyToss
 {
-    public App()
+    public partial class App : Application
     {
-        InitializeComponent();
+        public App()
+        {
+            InitializeComponent();
 
-        MainPage = new NavigationPage(new Views.PasswordsPage());
+            MainPage = new AppShell();
+        }
     }
 }
