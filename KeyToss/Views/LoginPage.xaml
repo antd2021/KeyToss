@@ -39,7 +39,7 @@
                 <Button
                     x:Name="SignUpBtn"
                     Text="Sign Up"
-                    />
+                    Clicked="SignUpBtn_Clicked"/>
                 <Label
                     Text="Sign Up Here"
                     HorizontalOptions="Center"

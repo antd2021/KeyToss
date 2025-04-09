@@ -11,4 +11,9 @@ public partial class LoginPage : ContentPage
     {
 		Navigation.PushAsync(new SignUpPage());
     }
+
+    private void SignUpBtn_Clicked(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new PasswordsPage());
+    }
 }
