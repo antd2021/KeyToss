@@ -15,31 +15,19 @@
                 FontAttributes="Bold"
                 Text="Key Toss"
                 />
-
             <Label
                 Text="Username"
                 />
             <Entry x:Name="Username"/>
-
-            <Label
-                Text="Email"
-                />
-            <Entry x:Name="Email"/>
-
             <Label
                 Text="Password"
                 />
             <Entry x:Name="Password"/>
-
-            <Label
-                Text="Confirm Password"
-                />
-            <Entry x:Name="PasswordConfirm"/>
             <VerticalStackLayout>
                 <Button
-                    x:Name="SignUpBtn"
-                    Text="Sign Up"
-                    Clicked="SignUpBtn_Clicked"/>
+                    x:Name="LoginBtn"
+                    Text="Login"
+                    Clicked="LoginBtn_Clicked"/>
                 <Label
                     Text="Sign Up Here"
                     HorizontalOptions="Center"
