@@ -12,8 +12,21 @@ public partial class LoginPage : ContentPage
 		Navigation.PushAsync(new SignUpPage());
     }
 
-    private void LoginBtn_Clicked(object sender, EventArgs e)
+    private async void LoginBtn_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new PasswordsPage());
+        string enteredUsername = Username.Text;
+        string enteredPassword = Password.Text;
+
+        string securedUsername = await SecureStorage.GetAsync("username"); //Could likely use the same method to get user information for the profile page
+        string securedPassword = await SecureStorage.GetAsync("password");
+
+        if (enteredUsername == securedUsername && enteredPassword == securedPassword)
+        {
+            Navigation.PushAsync(new PasswordsPage());
+        }
+        else
+        {
+            DisplayAlert("Error", "Invalid username or password. Try Again.", "OK");
+        }
     }
 }
