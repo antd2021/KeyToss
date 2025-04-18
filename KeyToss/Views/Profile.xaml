@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KeyToss.ProfilePage"
+             BackgroundColor="White">
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout Padding="20" Spacing="25">
+
+                <Frame HeightRequest="120"
+                    WidthRequest="120"
+                    CornerRadius="60"
+                    IsClippedToBounds="True"
+                    Padding="0"
+                    BorderColor="Transparent"
+                    HorizontalOptions="Center"
+                    Margin="0,20,0,20">
+                    <Image Source="avatar_placeholder.png"
+                        Aspect="AspectFill"
+                        HeightRequest="120"
+                        WidthRequest="120" />
+                </Frame>
+
+                <StackLayout Spacing="15">
+                    <StackLayout Spacing="5">
+                        <Label Text="Username:"
+                               FontAttributes="Bold"
+                               FontSize="14" />
+                        <Label Text="DummyAccount1"
+                               FontSize="14"
+                               x:Name="UsernameLabel" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="5">
+                        <Label Text="Email:"
+                               FontAttributes="Bold"
+                               FontSize="14" />
+                        <Label Text="DummyAccount1@gmail.com"
+                               FontSize="14"
+                               x:Name="EmailLabel" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="5">
+                        <Label Text="Password:"
+                               FontAttributes="Bold"
+                               FontSize="14" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="•••••••"
+                                   FontSize="14"
+                                   Grid.Column="0"
+                                   VerticalOptions="Center"
+                                   x:Name="PasswordLabel" />
+                            <Button Text="Show"
+                                    Grid.Column="1"
+                                    FontSize="12"
+                                    BackgroundColor="Transparent"
+                                    BorderColor="Transparent"
+                                    TextColor="#6200EE"
+                                    Padding="5,0"
+                                    HeightRequest="30"
+                                    WidthRequest="60"
+                                    x:Name="ShowPasswordButton"
+                                    Clicked="OnShowPasswordButtonClicked" />
+                        </Grid>
+                    </StackLayout>
+                </StackLayout>
+
+                <Button Text="Sign Out"
+                        BackgroundColor="#6200EE"
+                        TextColor="White"
+                        CornerRadius="5"
+                        Margin="0,30,0,0"
+                        HeightRequest="50"
+                        x:Name="SignOutButton"
+                        Clicked="OnSignOutButtonClicked" />
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
