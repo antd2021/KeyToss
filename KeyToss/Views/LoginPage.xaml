@@ -17,10 +17,12 @@
                 />
             <Label
                 Text="Username"
+                FontAttributes="Bold"
                 />
             <Entry x:Name="Username"/>
             <Label
                 Text="Password"
+                FontAttributes="Bold"
                 />
             <Entry x:Name="Password"/>
             <VerticalStackLayout>
@@ -40,7 +42,6 @@
                     </Label.GestureRecognizers>
                 </Label>
             </VerticalStackLayout>
-
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
