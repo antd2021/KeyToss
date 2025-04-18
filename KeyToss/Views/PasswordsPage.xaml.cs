@@ -68,4 +68,9 @@ public partial class PasswordsPage : ContentPage
     {
         await Navigation.PushModalAsync(new AddPasswordPage());
     }
+
+    private async void OnProfileClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new KeyToss.ProfilePage());
+    }
 }
