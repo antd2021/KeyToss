@@ -1,3 +1,5 @@
+using Plugin.Maui.Biometric;
+
 namespace KeyToss.Views;
 
 public partial class LoginPage : ContentPage
@@ -28,5 +30,17 @@ public partial class LoginPage : ContentPage
         {
             DisplayAlert("Error", "Invalid username or password. Try Again.", "OK");
         }
+
+        //var biometricResult = await BiometricAuthenticationService.Default.AuthenticateAsync(new AuthenticationRequest()
+        //{
+        //    Title = "Please Authenticate ",
+        //    NegativeText = "Cancel Authentication"
+        //}, CancellationToken.None);
+
+        //if (biometricResult.Status == BiometricResponseStatus.Success)
+        //{
+            
+        //}
+        //else { await DisplayAlert("Error!", "Authentication Failed", "OK"); }
     }
 }
