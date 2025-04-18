@@ -29,4 +29,5 @@
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
 </dict>
+	<key>NSFaceIDUsageDescription</key> <string>Use face ID to unlock.</string>
 </plist>
