@@ -1,4 +1,5 @@
 using Plugin.Maui.Biometric;
+using KeyToss.Services;
 
 namespace KeyToss.Views;
 
@@ -16,13 +17,16 @@ public partial class LoginPage : ContentPage
 
     private async void LoginBtn_Clicked(object sender, EventArgs e)
     {
+        var hashingService = new BcryptHashingService();
+
         string enteredUsername = Username.Text;
         string enteredPassword = Password.Text;
-
+        var securedPassword = await SecureStorage.GetAsync("password");
         string securedUsername = await SecureStorage.GetAsync("username"); //Could likely use the same method to get user information for the profile page
-        string securedPassword = await SecureStorage.GetAsync("password");
+        bool verifiedPass = hashingService.VerifyPassword(enteredPassword, securedPassword);
 
-        if (enteredUsername == securedUsername && enteredPassword == securedPassword)
+
+        if (enteredUsername == securedUsername && verifiedPass == true)
         {
             Navigation.PushAsync(new PasswordsPage());
         }
