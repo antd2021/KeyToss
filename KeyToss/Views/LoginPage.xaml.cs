@@ -5,30 +5,34 @@ namespace KeyToss.Views;
 
 public partial class LoginPage : ContentPage
 {
-	public LoginPage()
+    private int passwordAttempts = 3;
+    private bool isLockedOut = false;
+
+    public LoginPage()
 	{
 		InitializeComponent();
     }
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
+    //Comment out the following method to test on windows devices
+    //protected override async void OnAppearing()
+    //{
+    //    base.OnAppearing();
 
-        var biometricResult = await BiometricAuthenticationService.Default.AuthenticateAsync(new AuthenticationRequest
-        {
-            Title = "Please Authenticate",
-            NegativeText = "Cancel"
-        }, CancellationToken.None);
+    //    var biometricResult = await BiometricAuthenticationService.Default.AuthenticateAsync(new AuthenticationRequest
+    //    {
+    //        Title = "Please Authenticate",
+    //        NegativeText = "Cancel"
+    //    }, CancellationToken.None);
 
-        if (biometricResult.Status == BiometricResponseStatus.Success)
-        {
-            await Navigation.PushAsync(new PasswordsPage());
-        }
-        else
-        {
-            await DisplayAlert("Error", "Biometric Authentication Failed", "OK");
-        }
-    }
+    //    if (biometricResult.Status == BiometricResponseStatus.Success)
+    //    {
+    //        await Navigation.PushAsync(new PasswordsPage());
+    //    }
+    //    else
+    //    {
+    //        await DisplayAlert("Error", "Biometric Authentication Failed", "OK");
+    //    }
+    //}
 
 
     private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
@@ -38,6 +42,13 @@ public partial class LoginPage : ContentPage
 
     private async void LoginBtn_Clicked(object sender, EventArgs e)
     {
+
+        if (isLockedOut)
+        {
+            await DisplayAlert("Error", "You are temporarily locked out due to too many failed attempts.", "OK");
+            return;
+        }
+
         var hashingService = new BcryptHashingService();
 
         string enteredUsername = Username.Text;
@@ -49,11 +60,25 @@ public partial class LoginPage : ContentPage
 
         if (enteredUsername == securedUsername && verifiedPass == true)
         {
-            Navigation.PushAsync(new PasswordsPage());
+            passwordAttempts = 3; // reset on success
+            await Navigation.PushAsync(new PasswordsPage());
         }
         else
         {
-            DisplayAlert("Error", "Invalid username or password. Try Again.", "OK");
+            passwordAttempts--;
+
+            if (passwordAttempts == 0)
+            {
+                isLockedOut = true;
+                LoginBtn.IsEnabled = false;
+
+                await Task.Delay(20000); // wait 20 seconds
+
+                passwordAttempts = 3;
+                LoginBtn.IsEnabled = true;
+                isLockedOut = false;
+            }
+            await DisplayAlert("Error", "Invalid username or password. Try Again.", "OK");
         }
     }
 }
