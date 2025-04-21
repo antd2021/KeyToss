@@ -14,6 +14,8 @@ public partial class LoginPage : ContentPage
     }
 
     //Comment out the following method to test on windows devices
+    //Uncomment if trying to test on android or ios
+    //
     //protected override async void OnAppearing()
     //{
     //    base.OnAppearing();
@@ -72,13 +74,21 @@ public partial class LoginPage : ContentPage
                 isLockedOut = true;
                 LoginBtn.IsEnabled = false;
 
-                await Task.Delay(20000); // wait 20 seconds
+                await DisplayAlert("Error", "You are temporarily locked out due to too many failed attempts.", "OK");
 
-                passwordAttempts = 3;
-                LoginBtn.IsEnabled = true;
-                isLockedOut = false;
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(20000); // wait 20 seconds
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        passwordAttempts = 3;
+                        LoginBtn.IsEnabled = true;
+                        isLockedOut = false;
+                    });
+                });
+
             }
-            await DisplayAlert("Error", "Invalid username or password. Try Again.", "OK");
+            await DisplayAlert("Error", $"Invalid username or password. You have {passwordAttempts} attempts left before lockout. Try Again.", "OK");
         }
     }
 }
