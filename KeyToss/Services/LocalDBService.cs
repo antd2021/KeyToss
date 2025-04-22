@@ -19,20 +19,54 @@ public class LocalDBService
         InitializeAsync().Wait();
     }
 
+    public async Task SeedDataAsync()
+    {
+        // Check if the database already has some data, and if not, insert some default records.
+        var existingPasswords = await _connection.Table<Password>().ToListAsync();
+        if (!existingPasswords.Any()) // If no data exists
+        {
+            var defaultPasswords = new List<Password>
+        {
+            new Password { WebsiteName = "ExampleSite1", Username = "user1", EncryptedPassword = "encrypted1", LastModified = DateTime.Now, ExpirationDate = DateTime.Now.AddYears(1) },
+            new Password { WebsiteName = "ExampleSite2", Username = "user2", EncryptedPassword = "encrypted2", LastModified = DateTime.Now, ExpirationDate = DateTime.Now.AddYears(1) }
+        };
+
+            foreach (var password in defaultPasswords)
+            {
+                await _connection.InsertAsync(password); // Insert each default password
+            }
+        }
+    }
     private async Task InitializeAsync()
     {
         await _connection.CreateTableAsync<Password>();
 
         //Cleaning up from previous runs can delete after first run
         await _connection.ExecuteAsync("DROP TABLE IF EXISTS User;");
+        SeedDataAsync().Wait();
     }
 
-    // Inserts a new password entry into the Password table and returns the number of rows inserted
-    public Task<int> AddPasswordAsync(Password password) => _connection.InsertAsync(password);
+    public async Task<List<Password>> GetCustomers()
+    {
+        return await _connection.Table<Password>().ToListAsync();
+    }
 
-    //Grabs all password objects from the Password table and returns them as a list
-    public Task<List<Password>> GetAllPasswordsAsync() =>
-    _connection.Table<Password>().ToListAsync();
+    public async Task<Password> GetById(int id)
+    {
+        return await _connection.Table<Password>().Where(x => x.PasswordId == id).FirstOrDefaultAsync();
+    }
+    public async Task Create (Password password)
+    {
+        await _connection.InsertAsync(password);
+    }
 
+    public async Task Update(Password password)
+    {
+        await _connection.UpdateAsync(password);
+    }
 
+    public async Task Delete(Password password)
+    {
+        await _connection.DeleteAsync(password);
+    }
 }
