@@ -52,8 +52,7 @@ namespace KeyToss.Views
             {
                 WebsiteName = site,
                 EncryptedPassword = encrypted,
-                Username = username,
-                UserId = 0  // 可忽略或存序号
+                Username = username
             });
 
             // 6) 序列化回 SecureStorage

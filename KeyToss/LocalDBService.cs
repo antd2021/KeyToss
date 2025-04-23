@@ -57,10 +57,6 @@ public class LocalDBService
     // Inserts a new user into the User table and returns the number of rows inserted
 
     public Task<int> AddPasswordAsync(Password password) => _connection.InsertAsync(password);
-    // Inserts a new password entry into the Password table and returns the number of rows inserted
-
-    public Task<List<Password>> GetPasswordsForUserAsync(int userId) =>
-        _connection.Table<Password>().Where(p => p.UserId == userId).ToListAsync();
     // Returns all password records associated with a specific user based on UserId
 
     public Task<User> GetUserByUsernameAsync(string username)
