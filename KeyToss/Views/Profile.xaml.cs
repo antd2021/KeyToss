@@ -47,7 +47,7 @@ public partial class ProfilePage : ContentPage
         }
         else
         {
-            PasswordLabel.Text = "•••••••";
+            PasswordLabel.Text = "••••••?";
             ShowPasswordButton.Text = "Show";
         }
     }

@@ -62,4 +62,9 @@ public class LocalDBService
     public Task<List<Password>> GetPasswordsForUserAsync(int userId) =>
         _connection.Table<Password>().Where(p => p.UserId == userId).ToListAsync();
     // Returns all password records associated with a specific user based on UserId
+
+    public Task<User> GetUserByUsernameAsync(string username)
+        => _connection.Table<User>()
+                      .Where(u => u.Username == username)
+                      .FirstOrDefaultAsync();
 }
