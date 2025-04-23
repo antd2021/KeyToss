@@ -52,8 +52,7 @@ namespace KeyToss.Views
             {
                 WebsiteName = site,
                 EncryptedPassword = encrypted,
-                Username = username,
-                UserId = 0  // 可忽略或存序号
+                Username = username
             });
 
             // 6) 序列化回 SecureStorage
@@ -66,5 +65,12 @@ namespace KeyToss.Views
 
         private async void OnBackClicked(object sender, EventArgs e)
             => await Navigation.PopModalAsync();
+
+        private void OnGenerateClicked(object sender, EventArgs e)
+        {
+            string password = new PasswordGeneratorService().GeneratePassword();
+            PasswordEntry.Text = password;
+            ConfirmEntry.Text = password;
+        }
     }
 }
