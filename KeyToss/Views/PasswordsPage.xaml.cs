@@ -198,9 +198,11 @@ namespace KeyToss.Views
             var json = await SecureStorage.GetAsync(key) ?? "[]";
             var list = JsonSerializer.Deserialize<List<Password>>(json)!;
 
-            list.RemoveAll(p => p.WebsiteName == selectedPassword.WebsiteName &&
-                                p.Username == selectedPassword.Username &&
-                                p.EncryptedPassword == selectedPassword.EncryptedPassword);
+            list.RemoveAll(p =>
+                p.WebsiteName == selectedPassword.WebsiteName &&
+                p.Username == selectedPassword.Username &&
+                p.EncryptedPassword == selectedPassword.EncryptedPassword);
+            _allPasswords = list;
 
             var newJson = JsonSerializer.Serialize(list);
             await SecureStorage.SetAsync(key, newJson);
