@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +13,10 @@ namespace KeyToss.Views
 {
     public partial class PasswordsPage : ContentPage
     {
+        // AES key/iv
+        private static readonly byte[] _aesKey = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
+        private static readonly byte[] _aesIv = Encoding.UTF8.GetBytes("ABCDEF0123456789");
+
         private List<Password> _allPasswords = new();
         public PasswordsPage()
         {
@@ -42,7 +46,7 @@ namespace KeyToss.Views
             }
         }
 
-        // ©¤©¤ Search (retain original UI, but filter data from storage)
+        // â”€â”€ Search (retain original UI, but filter data from storage)
         private async void OnSearchClicked(object sender, EventArgs e)
         {
             string site = await DisplayPromptAsync(
@@ -74,7 +78,37 @@ namespace KeyToss.Views
             }
         }
 
-        // ©¤©¤ Home button: reset full password list
+        private void OnShowClicked(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            var pwd = btn.BindingContext as Password;
+            if (pwd == null) return;
+
+            // Find the Label with ClassId="PwdLbl" in the same DataTemplate
+            var grid = (Grid)btn.Parent;
+            var pwdLabel = grid.Children
+                .OfType<Label>()
+                .FirstOrDefault(l => l.ClassId == "PwdLbl");
+            if (pwdLabel == null) return;
+
+            if (btn.Text == "Show")
+            {
+                // decrypt and show
+                var plain = AESEncryptionService.DecryptStringAES(
+                    pwd.EncryptedPassword, _aesKey, _aesIv);
+                pwdLabel.Text = plain;
+                btn.Text = "Hide";
+            }
+            else
+            {
+                // mask again
+                pwdLabel.Text = "â€¢â€¢â€¢â€¢â€¢â€¢";
+                btn.Text = "Show";
+            }
+        }
+
+
+        // â”€â”€ Home button: reset full password list
         private void OnHomeClicked(object sender, EventArgs e)
         {
             if (!(BindingContext is PasswordListViewModel vm))
@@ -85,92 +119,100 @@ namespace KeyToss.Views
                 vm.Passwords.Add(p);
         }
 
-        // ©¤©¤ Edit password
+        // â”€â”€ Edit password
         private async void OnEditClicked(object sender, EventArgs e)
         {
-            var button = (Button)sender;
-            var selectedPassword = button.BindingContext as Password;
+            var btn = (Button)sender;
+            var pwd = btn.BindingContext as Password;
+            if (pwd == null) return;
 
-            if (selectedPassword == null)
-                return;
-
-            var username = await SecureStorage.GetAsync("username");
-            if (string.IsNullOrEmpty(username))
-            {
-                await DisplayAlert("Error", "User not found", "OK");
-                return;
-            }
-
-            // Decrypt existing password
-            string decrypted = AESEncryptionService.DecryptStringAES(
-                selectedPassword.EncryptedPassword,
-                Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-                Encoding.UTF8.GetBytes("ABCDEF0123456789")
-            );
-
-            // Ask if user wants to generate a strong password
-            bool useGenerated = await DisplayAlert(
-                "Generate Password",
-                "Do you want to generate a strong password?",
-                "Yes", "No");
-
-            string newPassword;
-
-            if (useGenerated)
-            {
-                var generator = new PasswordGeneratorService();
-                newPassword = generator.GeneratePassword();
-            }
-            else
-            {
-                newPassword = await DisplayPromptAsync(
-                    title: "Edit Password",
-                    message: "Edit your password:",
-                    accept: "Save",
-                    cancel: "Back",
-                    initialValue: decrypted,
-                    placeholder: "Enter new password",
-                    maxLength: 50,
-                    keyboard: Keyboard.Text);
-            }
-
-            if (string.IsNullOrEmpty(newPassword))
-                return;
-
-            // Re-encrypt updated password
-            string newEncrypted = AESEncryptionService.EncryptStringAES(
-                newPassword,
-                Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-                Encoding.UTF8.GetBytes("ABCDEF0123456789")
-            );
-
-            // Update stored password JSON
-            string key = $"pwlist_{username}";
-            var json = await SecureStorage.GetAsync(key) ?? "[]";
-            var list = JsonSerializer.Deserialize<List<Password>>(json)!;
-
-            var target = list.FirstOrDefault(p =>
-                p.WebsiteName == selectedPassword.WebsiteName &&
-                p.Username == selectedPassword.Username &&
-                p.EncryptedPassword == selectedPassword.EncryptedPassword);
-
-            if (target != null)
-            {
-                target.EncryptedPassword = newEncrypted;
-            }
-
-            string newJson = JsonSerializer.Serialize(list);
-            await SecureStorage.SetAsync(key, newJson);
-
-            // Update the page UI
-            if (BindingContext is PasswordListViewModel vm)
-            {
-                selectedPassword.EncryptedPassword = newEncrypted;
-                // ObservableCollection will refresh the UI automatically
-            }
+            await Navigation.PushModalAsync(new EditPasswordPage(pwd));
         }
+        //private async void OnEditClicked(object sender, EventArgs e)
+        //{
+        //    var button = (Button)sender;
+        //    var selectedPassword = button.BindingContext as Password;
 
-        // ©¤©¤ Delete selected password from storage and UI
+        //    if (selectedPassword == null)
+        //        return;
+
+        //    var username = await SecureStorage.GetAsync("username");
+        //    if (string.IsNullOrEmpty(username))
+        //    {
+        //        await DisplayAlert("Error", "User not found", "OK");
+        //        return;
+        //    }
+
+        //    // Decrypt existing password
+        //    string decrypted = AESEncryptionService.DecryptStringAES(
+        //        selectedPassword.EncryptedPassword,
+        //        Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
+        //        Encoding.UTF8.GetBytes("ABCDEF0123456789")
+        //    );
+
+        //    // Ask if user wants to generate a strong password
+        //    bool useGenerated = await DisplayAlert(
+        //        "Generate Password",
+        //        "Do you want to generate a strong password?",
+        //        "Yes", "No");
+
+        //    string newPassword;
+
+        //    if (useGenerated)
+        //    {
+        //        var generator = new PasswordGeneratorService();
+        //        newPassword = generator.GeneratePassword();
+        //    }
+        //    else
+        //    {
+        //        newPassword = await DisplayPromptAsync(
+        //            title: "Edit Password",
+        //            message: "Edit your password:",
+        //            accept: "Save",
+        //            cancel: "Back",
+        //            initialValue: decrypted,
+        //            placeholder: "Enter new password",
+        //            maxLength: 50,
+        //            keyboard: Keyboard.Text);
+        //    }
+
+        //    if (string.IsNullOrEmpty(newPassword))
+        //        return;
+
+        //    // Re-encrypt updated password
+        //    string newEncrypted = AESEncryptionService.EncryptStringAES(
+        //        newPassword,
+        //        Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
+        //        Encoding.UTF8.GetBytes("ABCDEF0123456789")
+        //    );
+
+        //    // Update stored password JSON
+        //    string key = $"pwlist_{username}";
+        //    var json = await SecureStorage.GetAsync(key) ?? "[]";
+        //    var list = JsonSerializer.Deserialize<List<Password>>(json)!;
+
+        //    var target = list.FirstOrDefault(p =>
+        //        p.WebsiteName == selectedPassword.WebsiteName &&
+        //        p.Username == selectedPassword.Username &&
+        //        p.EncryptedPassword == selectedPassword.EncryptedPassword);
+
+        //    if (target != null)
+        //    {
+        //        target.EncryptedPassword = newEncrypted;
+        //    }
+
+        //    string newJson = JsonSerializer.Serialize(list);
+        //    await SecureStorage.SetAsync(key, newJson);
+
+        //    // Update the page UI
+        //    if (BindingContext is PasswordListViewModel vm)
+        //    {
+        //        selectedPassword.EncryptedPassword = newEncrypted;
+        //        // ObservableCollection will refresh the UI automatically
+        //    }
+        //}
+
+        // â”€â”€ Delete selected password from storage and UI
         private async void OnDeleteClicked(object sender, EventArgs e)
         {
             bool confirm = await DisplayAlert(
@@ -213,11 +255,11 @@ namespace KeyToss.Views
             }
         }
 
-        // ©¤©¤ Add new password entry (retains compatibility with original navigation)
+        // â”€â”€ Add new password entry (retains compatibility with original navigation)
         private async void OnAddClicked(object sender, EventArgs e)
             => await Navigation.PushModalAsync(new AddPasswordPage());
 
-        // ©¤©¤ Navigate to Profile page
+        // â”€â”€ Navigate to Profile page
         private async void OnProfileClicked(object sender, EventArgs e)
             => await Navigation.PushAsync(new ProfilePage());
     }

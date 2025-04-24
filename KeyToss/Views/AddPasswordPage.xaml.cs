@@ -59,7 +59,6 @@ namespace KeyToss.Views
             var newJson = JsonSerializer.Serialize(list);
             await SecureStorage.SetAsync(key, newJson);
 
-            // 7) ¹Ø±Õ
             await Navigation.PopModalAsync();
         }
 
