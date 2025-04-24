@@ -8,6 +8,7 @@ using KeyToss.Services;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using System.Text.Json;
+using Plugin.LocalNotification;
 
 namespace KeyToss.Views
 {
@@ -17,11 +18,13 @@ namespace KeyToss.Views
         public PasswordsPage()
         {
             InitializeComponent();
+            LocalNotificationCenter.Current.NotificationActionTapped += Current_NotificationActionTapped;
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
 
             // 1) Get the current logged-in username
             var username = await SecureStorage.GetAsync("username");
@@ -218,5 +221,14 @@ namespace KeyToss.Views
         // ©¤©¤ Navigate to Profile page
         private async void OnProfileClicked(object sender, EventArgs e)
             => await Navigation.PushAsync(new ProfilePage());
+
+        private void Current_NotificationActionTapped(Plugin.LocalNotification.EventArgs.NotificationActionEventArgs e)
+        {
+            if (e.IsDismissed)
+                DisplayAlert("Action", "Notification Dismissed", "OK");
+            if (e.IsTapped)
+                DisplayAlert("Action", "Notification Tapped", "OK");
+        }
+
     }
 }

@@ -5,6 +5,7 @@ using System.Text.Json;               // 或 using Newtonsoft.Json;
 using KeyToss.Models;
 using KeyToss.Services;
 using Microsoft.Maui.Storage;
+using Plugin.LocalNotification;
 
 namespace KeyToss.Views
 {
@@ -46,21 +47,38 @@ namespace KeyToss.Views
             string key = $"pwlist_{username}";
             var json = await SecureStorage.GetAsync(key) ?? "[]";
             var list = JsonSerializer.Deserialize<List<Password>>(json)!;
+            var expirationDate = ExpirationDatePicker.Date;
 
             // 5) 添加新条目
             list.Add(new Password
             {
                 WebsiteName = site,
                 EncryptedPassword = encrypted,
-                Username = username
+                Username = username,
+                ExpirationDate = expirationDate
             });
 
             // 6) 序列化回 SecureStorage
             var newJson = JsonSerializer.Serialize(list);
             await SecureStorage.SetAsync(key, newJson);
 
+
+            var notifyTime = expirationDate.AddDays(-3);
+            var notification = new NotificationRequest
+            {
+                NotificationId = new Random().Next(1000, 9999),
+                Title = "Password Expiration Reminder",
+                Description = $"Your password for {site} expires in 3 days.",
+                Schedule = new NotificationRequestSchedule
+                {
+                    NotifyTime = DateTime.Now.AddSeconds(5) //Set to notify immediately for testing purposes
+                }
+            };
+            await LocalNotificationCenter.Current.Show(notification);
+
             // 7) 关闭
             await Navigation.PopModalAsync();
+
         }
 
         private void OnGenerateClicked(object sender, EventArgs e)
@@ -72,5 +90,8 @@ namespace KeyToss.Views
 
         private async void OnBackClicked(object sender, EventArgs e)
             => await Navigation.PopModalAsync();
+
+        //Add expiration date entry and push notification when time nears expiration date
+        //Add entry for username
     }
 }
