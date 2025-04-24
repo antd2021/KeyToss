@@ -63,6 +63,13 @@ namespace KeyToss.Views
             await Navigation.PopModalAsync();
         }
 
+        private void OnGenerateClicked(object sender, EventArgs e)
+        {
+            string password = new PasswordGeneratorService().GeneratePassword();
+            PasswordEntry.Text = password;
+            ConfirmEntry.Text = password;
+        }
+
         private async void OnBackClicked(object sender, EventArgs e)
             => await Navigation.PopModalAsync();
     }
