@@ -211,6 +211,27 @@ namespace KeyToss.Views
             }
         }
 
+        private void OnShowPasswordClicked(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            var password = button.CommandParameter as Password;
+
+            if (password == null) return;
+
+            // Toggle visibility
+            password.IsPasswordVisible = !password.IsPasswordVisible;
+
+            // Decrypt the password if needed and we haven't already done so
+            if (password.IsPasswordVisible && string.IsNullOrEmpty(password.DecryptedPassword))
+            {
+                password.DecryptedPassword = AESEncryptionService.DecryptStringAES(
+                    password.EncryptedPassword,
+                    Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
+                    Encoding.UTF8.GetBytes("ABCDEF0123456789")
+                );
+            }
+        }
+
         // ©¤©¤ Add new password entry (retains compatibility with original navigation)
         private async void OnAddClicked(object sender, EventArgs e)
             => await Navigation.PushModalAsync(new AddPasswordPage());
