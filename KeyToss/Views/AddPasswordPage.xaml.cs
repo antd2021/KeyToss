@@ -10,9 +10,6 @@ namespace KeyToss.Views
 {
     public partial class AddPasswordPage : ContentPage
     {
-        // AES 加解密示例 key/iv
-        static readonly byte[] _aesKey = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
-        static readonly byte[] _aesIv = Encoding.UTF8.GetBytes("ABCDEF0123456789");
 
         public AddPasswordPage()
         {
@@ -39,6 +36,13 @@ namespace KeyToss.Views
             }
 
             // 3) AES 加密
+            // 3) AES 加密
+            string base64Key = await SecureStorage.GetAsync("aesKey");
+            string base64IV = await SecureStorage.GetAsync("aesIV");
+
+            byte[] _aesKey = Convert.FromBase64String(base64Key);
+            byte[] _aesIv = Convert.FromBase64String(base64IV);
+
             var encrypted = AESEncryptionService
                 .EncryptStringAES(pwd, _aesKey, _aesIv);
 

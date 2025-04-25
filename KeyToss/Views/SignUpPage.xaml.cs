@@ -1,4 +1,5 @@
 using KeyToss.Services;
+using System.Security.Cryptography;
 
 namespace KeyToss;
 
@@ -8,6 +9,21 @@ public partial class SignUpPage : ContentPage
     {
         InitializeComponent();
     }
+
+    public static byte[] GenerateAESKey(int keySizeInBits = 256)
+    {
+        byte[] key = new byte[keySizeInBits / 8];
+        RandomNumberGenerator.Fill(key);
+        return key;
+    }
+
+    public static byte[] GenerateAESIV()
+    {
+        byte[] iv = new byte[16];
+        RandomNumberGenerator.Fill(iv);
+        return iv;
+    }
+
 
     private async void OnSignUpButtonClicked(object sender, EventArgs e)
     {
@@ -38,6 +54,8 @@ public partial class SignUpPage : ContentPage
                 await SecureStorage.SetAsync("username", username);
                 await SecureStorage.SetAsync("email", email);
                 await SecureStorage.SetAsync("password", hashedPassword);
+                await SecureStorage.SetAsync("aesKey", Convert.ToBase64String(GenerateAESKey()));
+                await SecureStorage.SetAsync("aesIV", Convert.ToBase64String(GenerateAESIV()));
                 DisplayAlert("Account Created", "You have successfully created your account.", "OK");
                 Navigation.PopAsync();
             }
