@@ -10,9 +10,6 @@ namespace KeyToss.Views
 {
     public partial class AddPasswordPage : ContentPage
     {
-        // AES 加解密示例 key/iv
-        static readonly byte[] _aesKey = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
-        static readonly byte[] _aesIv = Encoding.UTF8.GetBytes("ABCDEF0123456789");
 
         public AddPasswordPage()
         {
@@ -39,8 +36,12 @@ namespace KeyToss.Views
             }
 
             // 3) AES 加密
-            var encrypted = AESEncryptionService
-                .EncryptStringAES(pwd, _aesKey, _aesIv);
+            // 3) AES 加密
+            var b64Key = await SecureStorage.GetAsync("aesKey");
+            var b64Iv = await SecureStorage.GetAsync("aesIV");
+            var aesKey = Convert.FromBase64String(b64Key);
+            var aesIv = Convert.FromBase64String(b64Iv);
+            var encrypted = AESEncryptionService.EncryptStringAES(pwd, aesKey, aesIv);
 
             // 4) 从 SecureStorage 读现有 JSON 列表
             string key = $"pwlist_{username}";
@@ -48,11 +49,18 @@ namespace KeyToss.Views
             var list = JsonSerializer.Deserialize<List<Password>>(json)!;
 
             // 5) 添加新条目
+            int nextId = list.Any()
+                ? list.Max(p => p.PasswordId) + 1
+                : 1;
+
             list.Add(new Password
             {
-                WebsiteName = site,
+                PasswordId = nextId,
+                WebsiteName = site!,
                 EncryptedPassword = encrypted,
-                Username = username
+                Username = username,
+                LastModified = DateTime.Now,
+                ExpirationDate = DateTime.Now  // 或从界面上读
             });
 
             // 6) 序列化回 SecureStorage

@@ -8,16 +8,17 @@ using KeyToss.Services;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace KeyToss.Views
 {
     public partial class PasswordsPage : ContentPage
     {
-        // AES key/iv
-        private static readonly byte[] _aesKey = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
-        private static readonly byte[] _aesIv = Encoding.UTF8.GetBytes("ABCDEF0123456789");
+        private byte[] _aesKey;
+        private byte[] _aesIv;
 
         private List<Password> _allPasswords = new();
+        
         public PasswordsPage()
         {
             InitializeComponent();
@@ -27,17 +28,15 @@ namespace KeyToss.Views
         {
             base.OnAppearing();
 
-            // 1) Get the current logged-in username
+            var b64Key = await SecureStorage.GetAsync("aesKey");
+            var b64Iv = await SecureStorage.GetAsync("aesIV");
+            _aesKey = Convert.FromBase64String(b64Key);
+            _aesIv = Convert.FromBase64String(b64Iv);
+
             var username = await SecureStorage.GetAsync("username");
-            if (string.IsNullOrEmpty(username))
-                return;
-
-            // 2) Retrieve and deserialize stored password list
-            var key = $"pwlist_{username}";
-            var json = await SecureStorage.GetAsync(key) ?? "[]";
+            if (string.IsNullOrEmpty(username)) return;
+            var json = await SecureStorage.GetAsync($"pwlist_{username}") ?? "[]";
             _allPasswords = JsonSerializer.Deserialize<List<Password>>(json)!;
-
-            // 3) Load into ViewModel
             if (BindingContext is PasswordListViewModel vm)
             {
                 vm.Passwords.Clear();
@@ -78,36 +77,6 @@ namespace KeyToss.Views
             }
         }
 
-        private void OnShowClicked(object sender, EventArgs e)
-        {
-            var btn = (Button)sender;
-            var pwd = btn.BindingContext as Password;
-            if (pwd == null) return;
-
-            // Find the Label with ClassId="PwdLbl" in the same DataTemplate
-            var grid = (Grid)btn.Parent;
-            var pwdLabel = grid.Children
-                .OfType<Label>()
-                .FirstOrDefault(l => l.ClassId == "PwdLbl");
-            if (pwdLabel == null) return;
-
-            if (btn.Text == "Show")
-            {
-                // decrypt and show
-                var plain = AESEncryptionService.DecryptStringAES(
-                    pwd.EncryptedPassword, _aesKey, _aesIv);
-                pwdLabel.Text = plain;
-                btn.Text = "Hide";
-            }
-            else
-            {
-                // mask again
-                pwdLabel.Text = "••••••";
-                btn.Text = "Show";
-            }
-        }
-
-
         // ── Home button: reset full password list
         private void OnHomeClicked(object sender, EventArgs e)
         {
@@ -128,89 +97,6 @@ namespace KeyToss.Views
 
             await Navigation.PushModalAsync(new EditPasswordPage(pwd));
         }
-        //private async void OnEditClicked(object sender, EventArgs e)
-        //{
-        //    var button = (Button)sender;
-        //    var selectedPassword = button.BindingContext as Password;
-
-        //    if (selectedPassword == null)
-        //        return;
-
-        //    var username = await SecureStorage.GetAsync("username");
-        //    if (string.IsNullOrEmpty(username))
-        //    {
-        //        await DisplayAlert("Error", "User not found", "OK");
-        //        return;
-        //    }
-
-        //    // Decrypt existing password
-        //    string decrypted = AESEncryptionService.DecryptStringAES(
-        //        selectedPassword.EncryptedPassword,
-        //        Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-        //        Encoding.UTF8.GetBytes("ABCDEF0123456789")
-        //    );
-
-        //    // Ask if user wants to generate a strong password
-        //    bool useGenerated = await DisplayAlert(
-        //        "Generate Password",
-        //        "Do you want to generate a strong password?",
-        //        "Yes", "No");
-
-        //    string newPassword;
-
-        //    if (useGenerated)
-        //    {
-        //        var generator = new PasswordGeneratorService();
-        //        newPassword = generator.GeneratePassword();
-        //    }
-        //    else
-        //    {
-        //        newPassword = await DisplayPromptAsync(
-        //            title: "Edit Password",
-        //            message: "Edit your password:",
-        //            accept: "Save",
-        //            cancel: "Back",
-        //            initialValue: decrypted,
-        //            placeholder: "Enter new password",
-        //            maxLength: 50,
-        //            keyboard: Keyboard.Text);
-        //    }
-
-        //    if (string.IsNullOrEmpty(newPassword))
-        //        return;
-
-        //    // Re-encrypt updated password
-        //    string newEncrypted = AESEncryptionService.EncryptStringAES(
-        //        newPassword,
-        //        Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-        //        Encoding.UTF8.GetBytes("ABCDEF0123456789")
-        //    );
-
-        //    // Update stored password JSON
-        //    string key = $"pwlist_{username}";
-        //    var json = await SecureStorage.GetAsync(key) ?? "[]";
-        //    var list = JsonSerializer.Deserialize<List<Password>>(json)!;
-
-        //    var target = list.FirstOrDefault(p =>
-        //        p.WebsiteName == selectedPassword.WebsiteName &&
-        //        p.Username == selectedPassword.Username &&
-        //        p.EncryptedPassword == selectedPassword.EncryptedPassword);
-
-        //    if (target != null)
-        //    {
-        //        target.EncryptedPassword = newEncrypted;
-        //    }
-
-        //    string newJson = JsonSerializer.Serialize(list);
-        //    await SecureStorage.SetAsync(key, newJson);
-
-        //    // Update the page UI
-        //    if (BindingContext is PasswordListViewModel vm)
-        //    {
-        //        selectedPassword.EncryptedPassword = newEncrypted;
-        //        // ObservableCollection will refresh the UI automatically
-        //    }
-        //}
 
         // ── Delete selected password from storage and UI
         private async void OnDeleteClicked(object sender, EventArgs e)
@@ -256,6 +142,59 @@ namespace KeyToss.Views
         }
 
         // ── Add new password entry (retains compatibility with original navigation)
+        private async void OnShowPasswordClicked(object sender, EventArgs e)
+        {
+            //string base64Key = await SecureStorage.GetAsync("aesKey");
+            //string base64IV = await SecureStorage.GetAsync("aesIV");
+
+            //byte[] _aesKey = Convert.FromBase64String(base64Key);
+            //byte[] _aesIv = Convert.FromBase64String(base64IV);
+
+            //var button = (Button)sender;
+            //var password = button.CommandParameter as Password;
+
+            //if (password == null) return;
+
+            //// Toggle visibility
+            //password.IsPasswordVisible = !password.IsPasswordVisible;
+
+            //// Decrypt the password if needed and we haven't already done so
+            //if (password.IsPasswordVisible && string.IsNullOrEmpty(password.DecryptedPassword))
+            //{
+            //    password.DecryptedPassword = AESEncryptionService.DecryptStringAES(
+            //        password.EncryptedPassword, _aesKey, _aesIv
+            //    );
+            //}
+            var btn = (Button)sender;
+            var pwd = btn.CommandParameter as Password;
+            if (pwd == null) return;
+
+            pwd.IsPasswordVisible = !pwd.IsPasswordVisible;
+
+            if (pwd.IsPasswordVisible)
+            {
+
+                if (string.IsNullOrEmpty(pwd.EncryptedPassword))
+                {
+                    pwd.DecryptedPassword = "";
+                    return;
+                }
+
+                try
+                {
+                    pwd.DecryptedPassword = AESEncryptionService.DecryptStringAES(
+                        pwd.EncryptedPassword,
+                        _aesKey,
+                        _aesIv);
+                }
+                catch (CryptographicException)
+                {
+                    // 解密失败（格式不对／padding 错误），给个提示或显示空
+                    pwd.DecryptedPassword = "";
+                }
+            }
+        }
+
         private async void OnAddClicked(object sender, EventArgs e)
             => await Navigation.PushModalAsync(new AddPasswordPage());
 

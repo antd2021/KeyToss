@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Security.Cryptography;
 using System.Text.Json;
 using KeyToss.Models;
 using KeyToss.Services;
@@ -12,45 +12,49 @@ namespace KeyToss.Views
 {
     public partial class EditPasswordPage : ContentPage
     {
-        // AES key/IV (example¡ªuse your actual secure key/iv)
-        private static readonly byte[] _aesKey = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
-        private static readonly byte[] _aesIv = Encoding.UTF8.GetBytes("ABCDEF0123456789");
-        
-        private readonly Password _original;
+        private byte[] _aesKey;
+        private byte[] _aesIv;
         private readonly string _storageKey;
+        private readonly Password _original;
 
         public EditPasswordPage(Password password)
         {
             InitializeComponent();
-
             _original = password;
-
-            // Build the storage key once
-            var username = SecureStorage.GetAsync("username").Result;
-            _storageKey = $"pwlist_{username}";
-
-            // decrypt and prefill
-            WebsiteEntry.Text = _original.WebsiteName;
-            ExpirationPicker.Date = _original.ExpirationDate;
-
-            var plain = AESEncryptionService.DecryptStringAES(
-                password.EncryptedPassword, _aesKey, _aesIv);
-            PasswordEntry.Text = plain;
-            ConfirmEntry.Text = plain;
+            var user = SecureStorage.GetAsync("username").Result!;
+            _storageKey = $"pwlist_{user}";
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
 
-            string decrypted = AESEncryptionService.DecryptStringAES(
-                _original.EncryptedPassword, _aesKey, _aesIv);
+            var b64Key = await SecureStorage.GetAsync("aesKey");
+            var b64Iv = await SecureStorage.GetAsync("aesIV");
+            _aesKey = Convert.FromBase64String(b64Key);
+            _aesIv = Convert.FromBase64String(b64Iv);
 
-            PasswordEntry.Text = decrypted;
-            ConfirmEntry.Text = decrypted;
+            WebsiteEntry.Text = _original.WebsiteName;
+            ExpirationPicker.Date = _original.ExpirationDate;
+
+            if (!string.IsNullOrEmpty(_original.EncryptedPassword))
+            {
+                try
+                {
+                    var plain = AESEncryptionService.DecryptStringAES(
+                                  _original.EncryptedPassword,
+                                  _aesKey, _aesIv);
+                    PasswordEntry.Text = plain;
+                    ConfirmEntry.Text = plain;
+                }
+                catch (CryptographicException)
+                {
+                    PasswordEntry.Text = "";
+                    ConfirmEntry.Text = "";
+                }
+            }
         }
 
-        // Generate a random password into both fields
         private void OnGenerateClicked(object sender, EventArgs e)
         {
             var pw = new PasswordGeneratorService().GeneratePassword();
@@ -58,26 +62,21 @@ namespace KeyToss.Views
             ConfirmEntry.Text = pw;
         }
 
-        // Save changes: validate, encrypt, rewrite storage, pop back
         private async void OnSaveClicked(object sender, EventArgs e)
         {
-            // Validation
             var site = WebsiteEntry.Text?.Trim();
             var pwd = PasswordEntry.Text;
             if (string.IsNullOrWhiteSpace(site) || pwd != ConfirmEntry.Text)
             {
-                await DisplayAlert("Error", "Check your inputs.", "OK");
+                await DisplayAlert("Error", "Please fill correctly.", "OK");
                 return;
             }
 
-            // Encrypt new password
             var encrypted = AESEncryptionService.EncryptStringAES(pwd, _aesKey, _aesIv);
 
-            // Load full list from storage
             var json = await SecureStorage.GetAsync(_storageKey) ?? "[]";
             var list = JsonSerializer.Deserialize<List<Password>>(json)!;
 
-            // Find the record by ID and update
             var entry = list.FirstOrDefault(p => p.PasswordId == _original.PasswordId);
             if (entry != null)
             {
@@ -87,15 +86,10 @@ namespace KeyToss.Views
                 entry.LastModified = DateTime.Now;
             }
 
-            // Save back
-            var newJson = JsonSerializer.Serialize(list);
-            await SecureStorage.SetAsync(_storageKey, newJson);
-
-            // Close and return
+            await SecureStorage.SetAsync(_storageKey, JsonSerializer.Serialize(list));
             await Navigation.PopModalAsync();
         }
 
-        // Cancel and go back
         private async void OnBackClicked(object sender, EventArgs e)
             => await Navigation.PopModalAsync();
     }
