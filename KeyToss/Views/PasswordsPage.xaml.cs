@@ -14,6 +14,7 @@ namespace KeyToss.Views
     public partial class PasswordsPage : ContentPage
     {
         private List<Password> _allPasswords = new();
+
         public PasswordsPage()
         {
             InitializeComponent();
@@ -101,12 +102,18 @@ namespace KeyToss.Views
                 return;
             }
 
+            string base64Key = await SecureStorage.GetAsync("aesKey");
+            string base64IV = await SecureStorage.GetAsync("aesIV");
+
+            byte[] _aesKey = Convert.FromBase64String(base64Key);
+            byte[] _aesIv = Convert.FromBase64String(base64IV);
+
             // Decrypt existing password
             string decrypted = AESEncryptionService.DecryptStringAES(
-                selectedPassword.EncryptedPassword,
-                Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-                Encoding.UTF8.GetBytes("ABCDEF0123456789")
-            );
+                 selectedPassword.EncryptedPassword,
+                 _aesKey,
+                 _aesIv
+             );
 
             // Ask if user wants to generate a strong password
             bool useGenerated = await DisplayAlert(
@@ -139,9 +146,7 @@ namespace KeyToss.Views
 
             // Re-encrypt updated password
             string newEncrypted = AESEncryptionService.EncryptStringAES(
-                newPassword,
-                Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-                Encoding.UTF8.GetBytes("ABCDEF0123456789")
+                newPassword, _aesKey,_aesIv
             );
 
             // Update stored password JSON
@@ -211,8 +216,14 @@ namespace KeyToss.Views
             }
         }
 
-        private void OnShowPasswordClicked(object sender, EventArgs e)
+        private async void OnShowPasswordClicked(object sender, EventArgs e)
         {
+            string base64Key = await SecureStorage.GetAsync("aesKey");
+            string base64IV = await SecureStorage.GetAsync("aesIV");
+
+            byte[] _aesKey = Convert.FromBase64String(base64Key);
+            byte[] _aesIv = Convert.FromBase64String(base64IV);
+
             var button = (Button)sender;
             var password = button.CommandParameter as Password;
 
@@ -225,9 +236,7 @@ namespace KeyToss.Views
             if (password.IsPasswordVisible && string.IsNullOrEmpty(password.DecryptedPassword))
             {
                 password.DecryptedPassword = AESEncryptionService.DecryptStringAES(
-                    password.EncryptedPassword,
-                    Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF"),
-                    Encoding.UTF8.GetBytes("ABCDEF0123456789")
+                    password.EncryptedPassword, _aesKey, _aesIv
                 );
             }
         }
