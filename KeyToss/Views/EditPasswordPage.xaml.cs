@@ -35,6 +35,7 @@ namespace KeyToss.Views
             _aesIv = Convert.FromBase64String(b64Iv);
 
             WebsiteEntry.Text = _original.WebsiteName;
+            UsernameEntry.Text = _original.SiteUsername;
             ExpirationPicker.Date = _original.ExpirationDate;
 
             if (!string.IsNullOrEmpty(_original.EncryptedPassword))
@@ -66,6 +67,8 @@ namespace KeyToss.Views
         {
             var site = WebsiteEntry.Text?.Trim();
             var pwd = PasswordEntry.Text;
+            var siteUsername = UsernameEntry.Text.Trim();
+
             if (string.IsNullOrWhiteSpace(site) || pwd != ConfirmEntry.Text)
             {
                 await DisplayAlert("Error", "Please fill correctly.", "OK");
@@ -81,6 +84,7 @@ namespace KeyToss.Views
             if (entry != null)
             {
                 entry.WebsiteName = site;
+                entry.SiteUsername = siteUsername;
                 entry.EncryptedPassword = encrypted;
                 entry.ExpirationDate = ExpirationPicker.Date;
                 entry.LastModified = DateTime.Now;

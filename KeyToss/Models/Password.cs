@@ -7,6 +7,7 @@ namespace KeyToss.Models
         public int PasswordId { get; set; }
         public string WebsiteName { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
+        public string SiteUsername { get; set; } = string.Empty;
         public string EncryptedPassword { get; set; } = string.Empty;
 
         private bool _isPasswordVisible;

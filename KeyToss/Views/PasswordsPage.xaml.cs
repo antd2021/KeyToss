@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using System.Text.Json;
 using System.Security.Cryptography;
+using Plugin.LocalNotification;
 
 namespace KeyToss.Views
 {
@@ -27,6 +28,8 @@ namespace KeyToss.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
 
             var b64Key = await SecureStorage.GetAsync("aesKey");
             var b64Iv = await SecureStorage.GetAsync("aesIV");
