@@ -48,6 +48,7 @@ namespace KeyToss.Views
             var json = await SecureStorage.GetAsync(key) ?? "[]";
             var list = JsonSerializer.Deserialize<List<Password>>(json)!;
             var expirationDate = ExpirationDatePicker.Date;
+            var siteUsername = UsernameEntry.Text.Trim();
 
             // 5) 添加新条目
             list.Add(new Password
@@ -55,6 +56,7 @@ namespace KeyToss.Views
                 WebsiteName = site,
                 EncryptedPassword = encrypted,
                 Username = username,
+                SiteUsername = siteUsername,
                 ExpirationDate = expirationDate
             });
 

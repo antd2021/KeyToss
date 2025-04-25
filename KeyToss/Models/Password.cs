@@ -14,6 +14,7 @@ namespace KeyToss.Models
         public int PasswordId { get; set; }
         public string WebsiteName { get; set; }
         public string Username { get; set; }
+        public string SiteUsername { get; set; }
         public string EncryptedPassword { get; set; }
 
         public DateTime LastModified { get; set; }
