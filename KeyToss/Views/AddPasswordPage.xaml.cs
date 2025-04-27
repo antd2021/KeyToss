@@ -73,7 +73,7 @@ namespace KeyToss.Views
 
             // 7) Set notification for expiration
 
-            var notifyTime = expirationDate.AddDays(-3); //Actual NotifyTime
+            var notifyTime = expirationDate.AddDays(-3);
             var notification = new NotificationRequest
             {
                 NotificationId = new Random().Next(1000, 9999),
@@ -81,7 +81,7 @@ namespace KeyToss.Views
                 Description = $"Your password for {site} expires in 3 days.",
                 Schedule = new NotificationRequestSchedule
                 {
-                    NotifyTime = DateTime.Now.AddSeconds(5) //Set to notify immediately for testing purposes
+                    NotifyTime = notifyTime
                 }
             };
             await LocalNotificationCenter.Current.Show(notification);
