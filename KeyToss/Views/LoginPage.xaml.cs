@@ -15,26 +15,26 @@ public partial class LoginPage : ContentPage
 
     //Comment out the following method to test on windows devices
     //Uncomment if trying to test on android or ios
-    //
-    //protected override async void OnAppearing()
-    //{
-    //    base.OnAppearing();
 
-    //    var biometricResult = await BiometricAuthenticationService.Default.AuthenticateAsync(new AuthenticationRequest
-    //    {
-    //        Title = "Please Authenticate",
-    //        NegativeText = "Cancel"
-    //    }, CancellationToken.None);
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
 
-    //    if (biometricResult.Status == BiometricResponseStatus.Success)
-    //    {
-    //        await Navigation.PushAsync(new PasswordsPage());
-    //    }
-    //    else
-    //    {
-    //        await DisplayAlert("Error", "Biometric Authentication Failed", "OK");
-    //    }
-    //}
+        var biometricResult = await BiometricAuthenticationService.Default.AuthenticateAsync(new AuthenticationRequest
+        {
+            Title = "Please Authenticate",
+            NegativeText = "Cancel"
+        }, CancellationToken.None);
+
+        if (biometricResult.Status == BiometricResponseStatus.Success)
+        {
+            await Navigation.PushAsync(new PasswordsPage());
+        }
+        else
+        {
+            await DisplayAlert("Error", "Biometric Authentication Failed", "OK");
+        }
+    }
 
 
     private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)

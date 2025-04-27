@@ -22,7 +22,7 @@
             <Label
                 Text="Password"
                 />
-            <Entry x:Name="Password"/>
+            <Entry x:Name="Password" IsPassword="True"/>
             <VerticalStackLayout>
                 <Button
                     x:Name="LoginBtn"
