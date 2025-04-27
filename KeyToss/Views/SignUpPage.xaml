@@ -34,8 +34,7 @@
                     Margin="0,0,0,5" />
                 <Entry x:Name="PasswordEntry" 
                     Placeholder="Value"
-                    IsPassword="True"
-                    Margin="0,0,0,15" />
+                    Margin="0,0,0,15" IsPassword="True"/>
 
                 <Label Text="Confirm Password"
                     FontSize="14"
@@ -43,8 +42,7 @@
                     Margin="0,0,0,5" />
                 <Entry x:Name="ConfirmPasswordEntry" 
                     Placeholder="Value"
-                    IsPassword="True"
-                    Margin="0,0,0,25" />
+                    Margin="0,0,0,25" IsPassword="True"/>
 
                 <Button Text="Sign Up"
                     CornerRadius="4"
