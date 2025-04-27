@@ -71,7 +71,9 @@ namespace KeyToss.Views
             var newJson = JsonSerializer.Serialize(list);
             await SecureStorage.SetAsync(key, newJson);
 
-            var notifyTime = expirationDate.AddDays(-3);
+            // 7) Set notification for expiration
+
+            var notifyTime = expirationDate.AddDays(-3); //Actual NotifyTime
             var notification = new NotificationRequest
             {
                 NotificationId = new Random().Next(1000, 9999),
