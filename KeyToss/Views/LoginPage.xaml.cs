@@ -15,6 +15,7 @@ public partial class LoginPage : ContentPage
 
     //Comment out the following method to test on windows devices
     //Uncomment if trying to test on android or ios
+    //Method for biometric authentication
 
     protected override async void OnAppearing()
     {
@@ -44,7 +45,7 @@ public partial class LoginPage : ContentPage
 
     private async void LoginBtn_Clicked(object sender, EventArgs e)
     {
-
+        //Check if the user is locked out
         if (isLockedOut)
         {
             await DisplayAlert("Error", "You are temporarily locked out due to too many failed attempts.", "OK");
@@ -56,15 +57,23 @@ public partial class LoginPage : ContentPage
         string enteredUsername = Username.Text;
         string enteredPassword = Password.Text;
         var securedPassword = await SecureStorage.GetAsync("password");
-        var securedUsername = await SecureStorage.GetAsync("username"); //Could likely use the same method to get user information for the profile page
+        var securedUsername = await SecureStorage.GetAsync("username"); 
         bool verifiedPass = hashingService.VerifyPassword(enteredPassword, securedPassword);
 
+        //Checking if the user exists and if not prompt them to create an account
+        if (securedUsername == null)
+        {
+            await DisplayAlert("No User Found", "No user exists. Please create an account first.", "OK");
+            return;
+        }
 
+        //Checking user login credentials
         if (enteredUsername == securedUsername && verifiedPass == true)
         {
             passwordAttempts = 3; // reset on success
             await Navigation.PushAsync(new PasswordsPage());
         }
+        //If the user enters the wrong credentials, decrement the attempts and check if they are locked out
         else
         {
             passwordAttempts--;
@@ -78,7 +87,7 @@ public partial class LoginPage : ContentPage
 
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(20000); // wait 20 seconds
+                    await Task.Delay(300000); // wait 5 minutes
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         passwordAttempts = 3;
